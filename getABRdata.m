@@ -80,7 +80,7 @@ for a = 1:length(combinedTable)
    % get the dB level of the trace
    levelCell = grep(traceInfo, 'Level');
    level = textscan(levelCell{1}, '%s', 'Delimiter', '=');
-   lvl = strrep(level{1}{2}, ' ', '_');
+   lvl = strrep(level{1}{2}, ' ', '-');
    
    % set name of trace based on record number and dB level
    %tName = strcat(rcd, '_', lvl);
