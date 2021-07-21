@@ -146,8 +146,8 @@ for f = 1:length(fields)
     t = t/sampRate;
     %get wave 1 amplitudes and latencies
     %specify timewindow for N1
-    t1 = 1.2;
-    t2 = 1.8;
+    t1 = 1.1;
+    t2 = 2.0;
 %     %specify timewindow for P1
 %     t3 = 1.5;
 %     t4 = 2.8;
@@ -165,9 +165,10 @@ for f = 1:length(fields)
     %shift time windows. 
     ALarray = [];
     for wf = 1:cls
-        tempidx1 = round(idx1 + 2.5*wf);
-        tempidx2 = round(idx2 + 2.5*wf);
-        
+        tempidx1 = round(idx1 + 1.2*wf);
+        tempidx2 = round(idx2 + 1.2*wf);
+        %tempidx1 = idx1;
+        %tempidx2 = idx2;
         %assess how far apart the tempidx are from the previous?
         
         if tempidx1 < 0 || tempidx2 < 0 
@@ -178,6 +179,9 @@ for f = 1:length(fields)
         %need to figure out how to catch index out of range error
         N = max(peaks(tempidx1:tempidx2, wf));
         Nidx = find(~(peaks(:, wf)-N));
+        if length(Nidx) > 1
+            Nidx = Nidx(1);
+        end
         N = N*1000000;
         %set time window for looking for P1 - first time is N1 latency,
         %next time is N1 latency + 0.5ms
@@ -187,6 +191,9 @@ for f = 1:length(fields)
         
         P = min(peaks(idx3:idx4, wf));
         Pidx = find(~(peaks(:, wf)-P));
+        if length(Pidx) > 1
+            Pidx = Pidx(1);
+        end
         P = P*1000000;
         W = N-P;
         ALarray(wf,1) = N;
@@ -320,7 +327,9 @@ if figs == true
         sgtitle(plotTitle)
     end
     
-    figure(5) %all waveforms on same plot
+    numFigs = length(findobj('type', 'figure'));
+    
+    figure(numFigs+1) %all waveforms on same plot
     %want to figure out how to plot only 1 to 6 ms
     
     for wv = 1:length(peakNames)
@@ -346,20 +355,58 @@ if figs == true
     legend(data.Waveforms.Properties.VariableNames)
     sgtitle(subjID)
 
-    figure(6) %Wave I amp
+    figure(numFigs+2) %Wave I amp - not fitted
     for wv = 1:length(peakNames)
         subplot(2,2,wv);
         amps = flip(table2array(waveIdata.(peakNames{wv})(:,5)));
-        %amps = amps.*1000000;
         stims = flip(waveforms.(peakNames{wv}).Properties.VariableNames);
-        plot(amps, "ko", 'MarkerSize', 8, 'MarkerFaceColor', 'k')
-        set(gca, 'XTickLabel', stims)
+        levs = cellfun(@(x) strsplit(x, '-'), stims, 'UniformOutput', false);
+        x = [];
+        for i=1:length(levs)
+            l = convertCharsToStrings(levs{i}{1});
+            x = vertcat(x, l);
+        end
+        x = str2double(x);
+        plot(x, amps, "ko", 'MarkerSize', 8, 'MarkerFaceColor', 'k')
+        %set(gca, 'XTickLabel', stims)
+        ax = gca;
+        ax.XAxis.MinorTick = 'on';
+        xlim([0 100])
+        xticks([0:20:100])
+        ylim([0 3])
+        xlabel('Stimulus level (dB SPL)')
         ylabel("Wave I Amplitude (µV)")
         subTitle = strrep(peakNames{wv}, 'r', '');
         title(strrep(subTitle, '_', '-'))
     end
     %linkaxes
     sgtitle(subjID)
+    
+%     figure(numFigs+3) %Wave I amp - curve fitted
+%     for wv = 1:length(peakNames)
+%         subplot(2,2,wv);
+%         amps = flip(table2array(waveIdata.(peakNames{wv})(:,5)));
+%         stims = flip(waveforms.(peakNames{wv}).Properties.VariableNames);
+%         
+%         %get stim levels to calculate growth function
+%         levs = cellfun(@(x) strsplit(x, '-'), stims, 'UniformOutput', false);
+%         x = [];
+%         for i=1:length(levs)
+%             l = convertCharsToStrings(levs{i}{1});
+%             x = vertcat(x, l);
+%         end
+%         x = str2double(x);
+%         
+%         %calculate noise - average from 7ms to end
+%         Tnoise = 7.0;
+%         idxnoise = find(abs(t-Tnoise)<0.02);
+%         avgs = mean(allPeaks.(peakNames{pk})(idxnoise:end,:);
+%         noise = mean(avgs);
+%         
+%         gf = csaps(x, amps, 0.001);
+%         
+%     end
+    
     % figure(4) %cross correlations
     % for wv = 1:cls
     %     plot((lags(:,wv)/sampRate).*1000, crosscorrs(:, wv))

@@ -60,7 +60,11 @@ function st = getABRdata(dataFiles)
     %         start = 309*(i-1)+1
     %     end
         start = recIdxs(i);
-        fin = start + 308;
+        if length(find(contains(data{1}, 'Freq'))) == 0;
+            fin = start + 306;
+        else
+            fin = start + 308;
+        end
 
 
         recordTable = cell2table(data{1}(start:fin));
@@ -96,8 +100,12 @@ function st = getABRdata(dataFiles)
 
     freqCell = table2cell(combinedTable{1});
     frequency = grep(freqCell, 'Freq');
-    freq = textscan(frequency{1}, '%s', 'Delimiter', '=');
-    frq = freq{1}{2};
+    if length(frequency) == 0;
+        frq = 'click';
+    else
+        freq = textscan(frequency{1}, '%s', 'Delimiter', '=');
+        frq = freq{1}{2};
+    end
     st(1).Info{end+1} = frq;
 
     allWFs = cell2table({});
