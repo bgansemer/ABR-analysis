@@ -2,7 +2,7 @@
 % Author: Benjamin Gansemer
 % Affiliation: Green Lab, University of Iowa
 % Date Started: July 2020
-% Last Updated: October 2020
+% Last Updated: July 2021
 
 % The function in this script is used to read 
 % auditory brainstem response (ABR) data into Matlab.
@@ -12,12 +12,7 @@
 % waveform dataset is a single column.
 % need to add functionality input list of files so you can display
 % waveforms across frequencies for an animal
-% Additional notes here
-% get list of files in directory: 
-%   files = dir([directory '\*.txt']);
-%   names = {files.name};
-%   folders = {files.folder};
-%   fullNames = strcat(folders, {'\'}, names);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function st = getABRdata(dataFiles)
