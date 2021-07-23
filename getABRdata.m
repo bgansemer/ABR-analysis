@@ -15,11 +15,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function st = getABRdata(dataFiles)
-% data file should be a txt file from BioSigRZ containing all records to be
+function st = getABRdata(dataFile)
+% dataFiles: filename for a txt file from BioSigRZ containing all records to be
 % analyzed from one animal at one timepoint. 
-% need to figure out how to make this process multiple files
-% giant struct with multiple structs?
 
 %bigst = struct([]);
 
@@ -29,8 +27,13 @@ function st = getABRdata(dataFiles)
     %fname = strrep(fname, '-', '_');
     %fname = strcat('r', fname);
     %% Read in raw data
-
-    abrFile = fopen(dataFiles, 'r');
+    %generate name for the entry
+    [~, fname] = fileparts(dataFile);
+    fname = strrep(fname, '-', '_');
+    fname = strcat('r', fname);
+    
+    %read in data
+    abrFile = fopen(dataFile, 'r');
     rawData = textscan(abrFile, '%s', 'Delimiter', '\n');
     fclose(abrFile);
 
@@ -86,6 +89,8 @@ function st = getABRdata(dataFiles)
 
     % trying to generate a struct instead
     st = struct([]);
+    
+    st(1).Name = fname;
 
     if exist("groupInfo", 'var') == 1
         st(1).Info = groupInfo;

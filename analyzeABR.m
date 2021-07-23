@@ -14,24 +14,23 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bigst, waveforms] = analyzeABR(dataFiles, figs, linkax)
-% Input argument is the dataFile, first step is to run getABRdata
-% to read the data into Matlab.
+function [bigst, waveforms] = analyzeABR(dataFiles, figs, linkax, plotPoints)
+% dataFiles: char of a directory name or filename
 % figs: logical/boolean, if true figures will be generated
 % linkax: logical/boolean, if true, y axes will be linked on figure 1
+% plotPoints: logical/boolean, if true, markers of the identified wave I
+% peak and trough will be plotted on each waveform
 
 %% Check arguments
 
 arguments
     dataFiles;
-end
 
-arguments
     figs(1,1) logical = 1;
-end
 
-arguments
     linkax(1,1) logical = 0;
+
+    plotPoints(1,1) logical = 1;
 end
 
 %% get dataFile information using getFileNames.m
@@ -39,7 +38,7 @@ end
 if class(dataFiles) == 'char'
     dataFiles = getFileNames(dataFiles);
 else
-    error('Error. File input must be a char or cell, not a %s.', ...
+    error('Error. File input must be a char, not a %s.', ...
         class(dataFiles))
 end
 
@@ -48,7 +47,7 @@ end
 
 %% Generate figures if figs == true
 if figs == true
-    generateFigs(bigst, waveforms, t, linkax);
+    generateFigs(bigst, waveforms, t, linkax, plotPoints);
 end
 
 end

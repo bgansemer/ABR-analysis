@@ -22,8 +22,8 @@
 %function [bigst, waveforms, crosscorrs, arrayTable] = identifyPeaks(dataFiles, linkax)
 %function [bigst, waveforms, waveIdata, t] = identifyPeaks(dataFiles)
 function [bigst, waveforms, t] = identifyPeaks(dataFiles)
-% Input argument is the dataFile, first step is to run getABRdata
-% to read the data into Matlab.
+% dataFiles: cell array of filename information for txt files to be
+% analyzed. The array is generated using getFileNames.m
 % bigst is a struct with sample info and waveform data from each input file
 % waveforms is struct with all waveform data
 % waveIdata is a struct with calculated ABR wave I amplitude and latencies
@@ -34,34 +34,41 @@ function [bigst, waveforms, t] = identifyPeaks(dataFiles)
 
 %% Read the raw data into Matlab using getABRdata.m
 bigst = struct([]);
-for f = 1:length(dataFiles)
-    
-    [~, fname] = fileparts(dataFiles{f});
-    fname = strrep(fname, '-', '_');
-    fname = strcat('r', fname);
-    
-    data = getABRdata(dataFiles{f});
+% for f = 1:length(dataFiles)
+%     
+%     [~, fname] = fileparts(dataFiles{f});
+%     fname = strrep(fname, '-', '_');
+%     fname = strcat('r', fname);
+%     
+%     data = getABRdata(dataFiles{f});
+% 
+% %     if data.Info ~= "No group info"
+% %         subjID = strrep(data.Info{find(contains(data.Info, 'Subject ID:'))}, ...
+% %             'Subject ID: ', '');
+% %     else
+% %         subjID = "No ID";
+% %     end
+%     
+%     bigst(1).(fname) = data;
+% end
 
-%     if data.Info ~= "No group info"
-%         subjID = strrep(data.Info{find(contains(data.Info, 'Subject ID:'))}, ...
-%             'Subject ID: ', '');
-%     else
-%         subjID = "No ID";
-%     end
-    
-    bigst(1).(fname) = data;
-end
+bigst = cellfun(@getABRdata, dataFiles);
 
 
 %% Get waveform data for each frequency
-fields = fieldnames(bigst);
+%fields = fieldnames(bigst);
 
 waveforms = struct([]);
 
-for f = 1:length(fields)
-    wfs = bigst.(fields{f}).Waveforms;
-    waveforms(1).(fields{f}) = wfs;
-    
+% for f = 1:length(fields)
+%     wfs = bigst.(fields{f}).Waveforms;
+%     waveforms(1).(fields{f}) = wfs;
+%     
+% end
+
+for f = 1:length(bigst)
+    wfs = bigst(f).Waveforms;
+    waveforms(1).(bigst(f).Name) = wfs;
 end
 
 %freq = data.Info{end};
@@ -72,11 +79,14 @@ end
 %% start processing each waveform in a loop
 %waveIdata = struct([]);
 
-for f = 1:length(fields)
+%for f = 1:length(fields)
+for f = 1:length(bigst)
     
     %% get individual waveform data
-    data = bigst.(fields{f});
-    peaks = table2array(waveforms.(fields{f}));
+    %data = bigst.(fields{f});
+    data = bigst(f);
+    %peaks = table2array(waveforms.(fields{f}));
+    peaks = table2array(waveforms.(bigst(f).Name));
     [rws, cls] = size(peaks);
    
     freq = data.Info{end};
@@ -91,7 +101,8 @@ for f = 1:length(fields)
         subjID = "No ID";
     end
     
-    stimLevels = (waveforms.(fields{f}).Properties.VariableNames)';
+    %stimLevels = (waveforms.(fields{f}).Properties.VariableNames)';
+    stimLevels = (waveforms.(bigst(f).Name).Properties.VariableNames)';
     
     %% calculate signal-to-noise ratio?
     %SNR - calculate SEM of averages
@@ -99,24 +110,24 @@ for f = 1:length(fields)
 
     %% perform cross-correlation of each waveform with the 90dB waveform using xcorr
     
-    %iterating through matrix, where c is column number
-    %matrix(:, c)
-    
-    crosscorrs = [];
-    lags = [];
-    %[rws, cls] = size(peaks);
-    
-    for i = 1:cls
-        [tempcorr, templag] = xcorr(peaks(:, i), peaks(:, 1));
-        
-        crosscorrs = [crosscorrs tempcorr];
-        lags = [lags templag];
-    
-    end
-    
-    [maxcors, corridx] = max(crosscorrs);
-    
-    corrdiffs = corridx - corridx(1);
+%     %iterating through matrix, where c is column number
+%     %matrix(:, c)
+%     
+%     crosscorrs = [];
+%     lags = [];
+%     %[rws, cls] = size(peaks);
+%     
+%     for i = 1:cls
+%         [tempcorr, templag] = xcorr(peaks(:, i), peaks(:, 1));
+%         
+%         crosscorrs = [crosscorrs tempcorr];
+%         lags = [lags templag];
+%     
+%     end
+%     
+%     [maxcors, corridx] = max(crosscorrs);
+%     
+%     corrdiffs = corridx - corridx(1);
     
     %% get wave 1 amplitudes and latencies
     %generate timepoints/time domain for plotting
@@ -193,7 +204,8 @@ for f = 1:length(fields)
     % writetable(arrayTable, filename.csv);
     
     %waveIdata(1).(fields{f}) = arrayTable;
-    bigst.(fields{f}).WaveI = arrayTable;
+    %bigst.(fields{f}).WaveI = arrayTable;
+    bigst(f).WaveI = arrayTable;
 %     %% generate plots - all freqs separate
 %     if figs == true
 %         peaks = peaks.*1000000;
