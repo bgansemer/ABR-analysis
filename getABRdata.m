@@ -114,9 +114,14 @@ function st = getABRdata(dataFile)
        tempTable = combinedTable{a}; %create temporary array to work with
 
        % split the data into info about the trace and the actual waveform data
-       traceInfo = table2cell(tempTable(1:16, 'Var1'));
-       traceData = tempTable(17:height(tempTable)-1, 'Var1');
-
+       if frq == 'click'
+           traceInfo = table2cell(tempTable(1:14, 'Var1'));
+           traceData = tempTable(15:height(tempTable)-1, 'Var1');
+       else
+           traceInfo = table2cell(tempTable(1:16, 'Var1'));
+           traceData = tempTable(17:height(tempTable)-1, 'Var1');
+       end
+       
        % get record number of the trace
        %recordCell = grep(traceInfo, 'Record');
        %record = textscan(recordCell{1}, '%s', 'Delimiter', ':');

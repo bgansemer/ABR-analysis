@@ -21,7 +21,7 @@
 
 %function [bigst, waveforms, crosscorrs, arrayTable] = identifyPeaks(dataFiles, linkax)
 %function [bigst, waveforms, waveIdata, t] = identifyPeaks(dataFiles)
-function [bigst, waveforms, t] = identifyPeaks(dataFiles)
+function [bigst, t] = identifyPeaks(dataFiles)
 % dataFiles: cell array of filename information for txt files to be
 % analyzed. The array is generated using getFileNames.m
 % bigst is a struct with sample info and waveform data from each input file
@@ -34,6 +34,8 @@ function [bigst, waveforms, t] = identifyPeaks(dataFiles)
 
 %% Read the raw data into Matlab using getABRdata.m
 bigst = struct([]);
+
+bigst = cellfun(@getABRdata, dataFiles);
 % for f = 1:length(dataFiles)
 %     
 %     [~, fname] = fileparts(dataFiles{f});
@@ -52,41 +54,47 @@ bigst = struct([]);
 %     bigst(1).(fname) = data;
 % end
 
-bigst = cellfun(@getABRdata, dataFiles);
-
-
 %% Get waveform data for each frequency
 %fields = fieldnames(bigst);
 
-waveforms = struct([]);
-
-% for f = 1:length(fields)
-%     wfs = bigst.(fields{f}).Waveforms;
-%     waveforms(1).(fields{f}) = wfs;
-%     
+% waveforms = struct([]);
+% 
+% for f = 1:length(bigst)
+%     wfs = bigst(f).Waveforms;
+%     waveforms(1).(bigst(f).Name) = wfs;
 % end
-
-for f = 1:length(bigst)
-    wfs = bigst(f).Waveforms;
-    waveforms(1).(bigst(f).Name) = wfs;
-end
 
 %freq = data.Info{end};
 
 %peaks = table2array(waveforms);
 
+%% Generate timepoint series
+%all waveforms should have 292 elements.
+%add in check to make sure all waveforms have 292 elements
+%sampRate = 24.4; %in kHz
+tempWv = bigst(1).Waveforms;
+n = numel(tempWv(:,1));
+t = 1:1:n;
+%t = t/sampRate;
+t = t*0.04096;
+%add t to bigst so an additional argument isn't needed later
+
+
 
 %% start processing each waveform in a loop
-%waveIdata = struct([]);
+%adds calculated wave I data to table and adds to table to corresponding
+%entry in bigst
+%maybe make this its own function to vectorize it instead of using the
+%loop? (or figure out some other way to vectorize it)
 
 %for f = 1:length(fields)
 for f = 1:length(bigst)
     
     %% get individual waveform data
-    %data = bigst.(fields{f});
     data = bigst(f);
-    %peaks = table2array(waveforms.(fields{f}));
-    peaks = table2array(waveforms.(bigst(f).Name));
+
+    %peaks = table2array(waveforms.(bigst(f).Name));
+    peaks = table2array(data.Waveforms);
     [rws, cls] = size(peaks);
    
     freq = data.Info{end};
@@ -101,8 +109,8 @@ for f = 1:length(bigst)
         subjID = "No ID";
     end
     
-    %stimLevels = (waveforms.(fields{f}).Properties.VariableNames)';
-    stimLevels = (waveforms.(bigst(f).Name).Properties.VariableNames)';
+    %stimLevels = (waveforms.(bigst(f).Name).Properties.VariableNames)';
+    stimLevels = (data.Waveforms.Properties.VariableNames)';
     
     %% calculate signal-to-noise ratio?
     %SNR - calculate SEM of averages
@@ -131,10 +139,10 @@ for f = 1:length(bigst)
     
     %% get wave 1 amplitudes and latencies
     %generate timepoints/time domain for plotting
-    sampRate = 24.4; %in kHz
-    n = numel(peaks(:,1));
-    t = 1:1:n;
-    t = t/sampRate;
+%     sampRate = 24.4; %in kHz
+%     n = numel(peaks(:,1));
+%     t = 1:1:n;
+%     t = t/sampRate;
     %get wave 1 amplitudes and latencies
     %specify timewindow for N1
     t1 = 1.1;
@@ -205,213 +213,11 @@ for f = 1:length(bigst)
     
     %waveIdata(1).(fields{f}) = arrayTable;
     %bigst.(fields{f}).WaveI = arrayTable;
-    bigst(f).WaveI = arrayTable;
-%     %% generate plots - all freqs separate
-%     if figs == true
-%         peaks = peaks.*1000000;
-%         figure(1) %each waveform on separate plot
-%         %want to figure out how to plot only 1 to 6 ms
-%         for wv = 1:cls
-%             subplot(cls, 1, wv);
-%             plot(t, peaks(:, wv))
-%             hold on
-%             plot(t(ALarray(wv,2)), (ALarray(wv,1)*1000000), "ro")
-%             hold off
-%             ylab = ylabel(data.Waveforms.Properties.VariableNames(wv));
-%             set(get(gca,'YLabel'),'Rotation',0,'VerticalAlignment','middle')
-%             ylab.Position(1) = -1;
-%             if wv ~= cls
-%                 set(gca, 'xticklabel', [])
-%             end
-%         end
-%         if linkax == true
-%             linkaxes
-%         end
-%         %legend(data.Waveforms.Properties.VariableNames)
-%         xlabel("Latency (ms)")
-%         %ylabel("Amplitude (µV)")
-%         %title("Waveforms")
-%         sgtitle(strcat(subjID, ' -  ', freq))
-% 
-%         figure(2) %all waveforms on same plot
-%         %want to figure out how to plot only 1 to 6 ms
-%         %figure out how to plot all for freqs on one plot
-%         for wv = 1:cls
-%             plot(t, peaks(:, wv))
-%             hold on
-%             plot(t(ALarray(wv,2)), (ALarray(wv,1)*1000000), "ro")
-%             hold on
-% 
-%         end
-%         hold off
-%         legend(data.Waveforms.Properties.VariableNames)
-%         xlabel("Latency (ms)")
-%         ylabel("Wave I Amplitude (µV)")
-%         title(strcat(subjID, ' -  ', freq))
-% 
-%         figure(3) %Wave I amp
-%         %figure out how to plot all for freqs on one plot
-%         amps = flip(ALarray(:,1));
-%         amps2 = vertcat(0, amps, 0);
-%         stims = flip(data.Waveforms.Properties.VariableNames);
-%         plot(amps.*1000000, "ko", 'MarkerSize', 8, 'MarkerFaceColor', 'k')
-%         set(gca, 'XTickLabel', stims)
-%         ylabel("Wave I Amplitude (µV)")
-%         title(strcat(subjID, ' -  ', freq))
-% 
-%         % figure(4) %cross correlations
-%         % for wv = 1:cls
-%         %     plot((lags(:,wv)/sampRate).*1000, crosscorrs(:, wv))
-%         %     hold on
-%         % end
-%         % hold off
-%         % legend(data.Waveforms.Properties.VariableNames)
-%         % xlabel("Latency (ms)")
-%         % ylabel("Amplitude (µV)")
-%         % title("Cross-correlations")
-%     end
+    bigst(f).waveIdata = arrayTable;
+    
+    %writetable(bigst(f).waveIdata, filename.csv);
+
 end   
-% %% generate plots - all freqs on figures
-% if figs == true
-% 
-%     allPeaks = structfun(@table2array, waveforms, 'UniformOutput', false);
-%     peakNames = fieldnames(allPeaks);
-%     for p = 1:length(peakNames)
-%         allPeaks.(peakNames{p}) = (allPeaks.(peakNames{p})).*1000000;
-%     end
-%     
-%     Tend = 6;
-%     idxEnd = find(abs(t-Tend)<0.02);
-%     
-%     
-%     for pk = 1:length(peakNames)
-%         peaks = allPeaks.(peakNames{pk});
-%         [~,cls] = size(peaks);
-%         plotTitle = strrep(peakNames{pk}, 'r', '');
-%         plotTitle = strrep(plotTitle, '_', '-');
-%         
-%         figure(pk) %each waveform on separate plot
-%         for wv = 1:cls
-%             subplot(cls, 1, wv);
-%             plot(t(1:idxEnd), peaks(1:idxEnd, wv))
-%             hold on
-%             plot(t(table2array(waveIdata.(peakNames{pk})(wv,2))), ...
-%                 (table2array(waveIdata.(peakNames{pk})(wv,1))), "ro")
-%             hold on
-%             plot(t(table2array(waveIdata.(peakNames{pk})(wv,4))), ...
-%                 (table2array(waveIdata.(peakNames{pk})(wv,3))), "bo")
-%             hold off
-%             ylab = ylabel(waveforms.(peakNames{pk}).Properties.VariableNames{wv});
-%             set(get(gca,'YLabel'),'Rotation',0,'VerticalAlignment','middle')
-%             ylab.Position(1) = -0.5;
-%             if wv ~= cls
-%                 set(gca, 'xticklabel', [])
-%             end
-%         end
-%         if linkax == true
-%             linkaxes
-%         end
-%         %legend(data.Waveforms.Properties.VariableNames)
-%         xlabel("Latency (ms)")
-%         %ylabel("Amplitude (µV)")
-%         %title("Waveforms")
-%         sgtitle(plotTitle)
-%     end
-%     
-%     numFigs = length(findobj('type', 'figure'));
-%     
-%     figure(numFigs+1) %all waveforms on same plot
-%     
-%     for wv = 1:length(peakNames)
-%         subplot(2,2,wv);
-%         plot(t(1:idxEnd), allPeaks.(peakNames{wv})(1:idxEnd, :))
-%         subTitle = strrep(peakNames{wv}, 'r', '');
-%         title(strrep(subTitle, '_', '-'))
-%         xlabel("Latency (ms)")
-%         ylabel("Wave I Amplitude (µV)")
-%         hold on
-%         plot(t(table2array(waveIdata.(peakNames{wv})(:,2))), ...
-%             (table2array(waveIdata.(peakNames{wv})(:,1))), "ro")
-%         hold on
-%         plot(t(table2array(waveIdata.(peakNames{wv})(:,4))), ...
-%             (table2array(waveIdata.(peakNames{wv})(:,3))), "bo")
-%         hold off
-% 
-%     end
-%     if linkax == true
-%         linkaxes
-%     end
-%     %hold off
-%     legend(data.Waveforms.Properties.VariableNames)
-%     sgtitle(subjID)
-% 
-%     figure(numFigs+2) %Wave I amp - not fitted
-%     for wv = 1:length(peakNames)
-%         subplot(2,2,wv);
-%         amps = flip(table2array(waveIdata.(peakNames{wv})(:,5)));
-%         stims = flip(waveforms.(peakNames{wv}).Properties.VariableNames);
-%         levs = cellfun(@(x) strsplit(x, '-'), stims, 'UniformOutput', false);
-%         x = [];
-%         for i=1:length(levs)
-%             l = convertCharsToStrings(levs{i}{1});
-%             x = vertcat(x, l);
-%         end
-%         x = str2double(x);
-%         plot(x, amps, "ko", 'MarkerSize', 8, 'MarkerFaceColor', 'k')
-%         %set(gca, 'XTickLabel', stims)
-%         ax = gca;
-%         ax.XAxis.MinorTick = 'on';
-%         xlim([0 100])
-%         xticks([0:20:100])
-%         ylim([0 3])
-%         xlabel('Stimulus level (dB SPL)')
-%         ylabel("Wave I Amplitude (µV)")
-%         subTitle = strrep(peakNames{wv}, 'r', '');
-%         title(strrep(subTitle, '_', '-'))
-%     end
-%     %linkaxes
-%     sgtitle(subjID)
-%     
-%     figure(numFigs+3) %matched waveforms by stimulus level
-%     %get waveforms for two conditions, matched by stim level
-%     %plot those two waveforms on same plot
-%     %do for all waveforms for which there are matches
-%     
-% %     figure(numFigs+3) %Wave I amp - curve fitted
-% %     for wv = 1:length(peakNames)
-% %         subplot(2,2,wv);
-% %         amps = flip(table2array(waveIdata.(peakNames{wv})(:,5)));
-% %         stims = flip(waveforms.(peakNames{wv}).Properties.VariableNames);
-% %         
-% %         %get stim levels to calculate growth function
-% %         levs = cellfun(@(x) strsplit(x, '-'), stims, 'UniformOutput', false);
-% %         x = [];
-% %         for i=1:length(levs)
-% %             l = convertCharsToStrings(levs{i}{1});
-% %             x = vertcat(x, l);
-% %         end
-% %         x = str2double(x);
-% %         
-% %         %calculate noise - average from 7ms to end
-% %         Tnoise = 7.0;
-% %         idxnoise = find(abs(t-Tnoise)<0.02);
-% %         avgs = mean(allPeaks.(peakNames{pk})(idxnoise:end,:);
-% %         noise = mean(avgs);
-% %         
-% %         gf = csaps(x, amps, 0.001);
-% %         
-% %     end
-%     
-%     % figure(4) %cross correlations
-%     % for wv = 1:cls
-%     %     plot((lags(:,wv)/sampRate).*1000, crosscorrs(:, wv))
-%     %     hold on
-%     % end
-%     % hold off
-%     % legend(data.Waveforms.Properties.VariableNames)
-%     % xlabel("Latency (ms)")
-%     % ylabel("Amplitude (µV)")
-%     % title("Cross-correlations")
-% end
+
 end
 

@@ -9,22 +9,39 @@
 %Data for plotting are received from the identifyPeaks function. 
 
 
-%Development notes: need to change all waveIdata instances to reflect
-%removal of waveIdata as its own struct. All wave I data is now part of
-%bigst. Early solution = generate waveIdata struct from bigst within this
-%function. Later solution will get rid of that step.
-
-%Also want to add argument to allow user to decide whether wave I points
-%will also be plotted on waveform traces.
+%Development notes: 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function generateFigs(waveforms, bigst, t, linkax)
+%function generateFigs(bigst, t, linkax, plotPoints, compareFig)
+function generateFigs(bigst, t, figOpts)
+% bigst the master struct containing all information
 % waveforms is the waveform data from identifyPeaks
-% waveIdata is the table of wave I amp and latency from idenfyPeaks
 % t is the time series generated in identifyPeaks
 % linkax: logical/boolean, if true, y axes will be linked on figure 1
-%% generate plots - all freqs on figures
+
+% arguments
+%     bigst struct
+%     
+%     t(1,:) double = 1:1
+%     
+%     figOpts.linkax(1,1) logical = 0;
+% 
+%     figOpts.plotPoints(1,1) logical = 1;
+%     
+%     figOpts.compareFig(1,1) logical = 0;
+%     
+%     figOpts.Tend(1,1) {mustBeNumeric} = 6;
+%     
+%     figOpts.legend(1,1) logical = 1;
+% end
+%% transform waveform data from table to array for plotting
+
+waveforms = struct([]);
+for f = 1:length(bigst)
+    wfs = bigst(f).Waveforms;
+    waveforms(1).(bigst(f).Name) = wfs;
+end
 
 allPeaks = structfun(@table2array, waveforms, 'UniformOutput', false);
 peakNames = fieldnames(allPeaks);
@@ -32,8 +49,16 @@ for p = 1:length(peakNames)
     allPeaks.(peakNames{p}) = (allPeaks.(peakNames{p})).*1000000;
 end
 
-Tend = 6;
-idxEnd = find(abs(t-Tend)<0.02);
+%% Check if time series (t) is present and sent end time for plots
+if length(t) == 1 %if t not specifed in args, create t
+    %sampRate = 24.4; %in kHz
+    tempWv = bigst(1).Waveforms;
+    n = numel(tempWv(:,1));
+    t = 1:1:n;
+    %t = t/sampRate;
+    t = t*0.04096;
+end
+idxEnd = find(abs(t-figOpts.Tend)<0.02);
 
 %% Plot each waveform on a separate subplot
 %One figure per animal/waveform set, each subplot is an individual waveform
@@ -47,13 +72,15 @@ for pk = 1:length(peakNames)
     for wv = 1:cls
         subplot(cls, 1, wv);
         plot(t(1:idxEnd), peaks(1:idxEnd, wv))
-        hold on
-        plot(t(table2array(waveIdata.(peakNames{pk})(wv,2))), ...
-            (table2array(waveIdata.(peakNames{pk})(wv,1))), "ro")
-        hold on
-        plot(t(table2array(waveIdata.(peakNames{pk})(wv,4))), ...
-            (table2array(waveIdata.(peakNames{pk})(wv,3))), "bo")
-        hold off
+        if figOpts.plotPoints == true
+            hold on
+            plot(t(table2array(bigst(pk).waveIdata(wv,2))), ...
+                (table2array(bigst(pk).waveIdata(wv,1))), "ro")
+            hold on
+            plot(t(table2array(bigst(pk).waveIdata(wv,4))), ...
+                (table2array(bigst(pk).waveIdata(wv,3))), "bo")
+            hold off
+        end
         ylab = ylabel(waveforms.(peakNames{pk}).Properties.VariableNames{wv});
         set(get(gca,'YLabel'),'Rotation',0,'VerticalAlignment','middle')
         ylab.Position(1) = -0.5;
@@ -61,7 +88,7 @@ for pk = 1:length(peakNames)
             set(gca, 'xticklabel', [])
         end
     end
-    if linkax == true
+    if figOpts.linkax == true
         linkaxes
     end
     %legend(data.Waveforms.Properties.VariableNames)
@@ -84,20 +111,25 @@ for wv = 1:length(peakNames)
     title(strrep(subTitle, '_', '-'))
     xlabel("Latency (ms)")
     ylabel("Wave I Amplitude (µV)")
-    hold on
-    plot(t(table2array(waveIdata.(peakNames{wv})(:,2))), ...
-        (table2array(waveIdata.(peakNames{wv})(:,1))), "ro")
-    hold on
-    plot(t(table2array(waveIdata.(peakNames{wv})(:,4))), ...
-        (table2array(waveIdata.(peakNames{wv})(:,3))), "bo")
-    hold off
+    legend(bigst(wv).Waveforms.Properties.VariableNames, 'Location', 'eastoutside');
+    if figOpts.plotPoints == true
+        hold on
+        plot(t(table2array(bigst(wv).waveIdata(:,2))), ...
+            (table2array(bigst(wv).waveIdata(:,1))), "ro")
+        hold on
+%         plot(t(table2array(waveIdata.(peakNames{wv})(:,4))), ...
+%             (table2array(waveIdata.(peakNames{wv})(:,3))), "bo")
+        plot(t(table2array(bigst(wv).waveIdata(:,4))), ...
+            (table2array(bigst(wv).waveIdata(:,3))), "bo")
+        hold off
+    end
 
 end
-if linkax == true
+if figOpts.linkax == true
     linkaxes
 end
 %hold off
-legend(waveforms.(peakNames{1}).Properties.VariableNames)
+%legend(bigst(1).Waveforms.Properties.VariableNames)
 %sgtitle(subjID)
 
 %% Plot wave I amplitudes (y-axis) vs. stimulus level (x-axis)
@@ -105,7 +137,7 @@ legend(waveforms.(peakNames{1}).Properties.VariableNames)
 figure(numFigs+2) %Wave I amp - not fitted
 for wv = 1:length(peakNames)
     subplot(2,2,wv);
-    amps = flip(table2array(waveIdata.(peakNames{wv})(:,5)));
+    amps = flip(table2array(bigst(wv).waveIdata(:,5)));
     stims = flip(waveforms.(peakNames{wv}).Properties.VariableNames);
     levs = cellfun(@(x) strsplit(x, '-'), stims, 'UniformOutput', false);
     x = [];
@@ -129,11 +161,49 @@ end
 %linkaxes
 %sgtitle(subjID)
 
-%figure(numFigs+3) %matched waveforms by stimulus level
-%get waveforms for two conditions, matched by stim level
-%plot those two waveforms on same plot
-%do for all waveforms for which there are matches
+%% Plot two waveforms against each other
+if figOpts.compareFig == true
+    %matched waveforms by stimulus level
+    %get waveforms for two conditions, matched by stim level
+    %plot those two waveforms on same plot
+    %do for all waveforms for which there are matches
+    %currently only plots the first two entries in bigst against each other
 
+    %get waveforms for each animal/conditon into separate arrays
+    samp1 = allPeaks.(peakNames{1})(:,[1:6]);
+    samp2 = allPeaks.(peakNames{2})(:,[1:6]);
+
+    %modify each to add a certain value to each amplitude for an individual
+    %Method from excel sheets is to subtract from waveforms from stimuli below
+    %90dB. First, try adding to waveforms from stimuli above the lowest.
+    %Example: lowest stimulus is 40dB. Add 0 to 40dB waveform, add 3 to all
+    %values in 50dB waveform, add 6 to all values in 60dB waveform, etc.
+    %number of columns is set at 6 currently
+    for col = 1:6
+        samp1(:,col) = samp1(:,col) + ((6-col)*3);
+        samp2(:,col) = samp2(:,col) + ((6-col)*3);
+    end
+    
+    figure(numFigs+3) 
+    hold on
+    h1 = plot(t(1:idxEnd), samp1(1:idxEnd, :), 'Color', 'k', 'LineWidth', 2);
+    h2 = plot(t(1:idxEnd), samp2(1:idxEnd, :), 'Color', [1 0.4 0], 'LineWidth', 2);
+    set(gca, 'YColor', 'white', 'yticklabel', [], 'YTick', [], ...
+        'XMinorTick', 'on', 'TickLength', [0.025,0.01], 'TickDir', 'both')
+    xlabel("Latency (ms)", 'FontWeight', 'bold')
+    
+    if figOpts.legend == true
+        legend([h1(1), h2(1)], strrep(peakNames, '_', '-'), 'Location', 'eastoutside')
+    end
+%     ylab1 = ylabel("dB SPL", 'Color', 'k', 'FontWeight', 'bold', ...
+%         'FontSize', 12, 'Rotation', 0);
+%     ylab1.Position(1) = -0.5;
+%     ylab1.Position(2) = 18;
+%     ylab2 = ylabel("90", 'Color', 'k', 'FontWeight', 'bold', ...
+%         'FontSize', 10, 'Rotation', 0);
+%     ylab2.Position(1) = -0.5;
+%     ylab2.Position(2) = 15;
+end
 %     figure(numFigs+3) %Wave I amp - curve fitted
 %     for wv = 1:length(peakNames)
 %         subplot(2,2,wv);
@@ -159,14 +229,5 @@ end
 %         
 %     end
 
-% figure(4) %cross correlations
-% for wv = 1:cls
-%     plot((lags(:,wv)/sampRate).*1000, crosscorrs(:, wv))
-%     hold on
-% end
-% hold off
-% legend(data.Waveforms.Properties.VariableNames)
-% xlabel("Latency (ms)")
-% ylabel("Amplitude (µV)")
-% title("Cross-correlations")
+
 end

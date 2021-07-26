@@ -14,7 +14,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bigst, waveforms] = analyzeABR(dataFiles, figs, linkax, plotPoints)
+%function [bigst] = analyzeABR(dataFiles, figs, linkax, plotPoints, compareFig)
+function [bigst] = analyzeABR(dataFiles, figs, figOpts)
 % dataFiles: char of a directory name or filename
 % figs: logical/boolean, if true figures will be generated
 % linkax: logical/boolean, if true, y axes will be linked on figure 1
@@ -28,9 +29,15 @@ arguments
 
     figs(1,1) logical = 1;
 
-    linkax(1,1) logical = 0;
+    figOpts.linkax(1,1) logical = 0;
 
-    plotPoints(1,1) logical = 1;
+    figOpts.plotPoints(1,1) logical = 1;
+    
+    figOpts.compareFig(1,1) logical = 0;
+    
+    figOpts.Tend(1,1) {mustBeNumeric} = 6;
+    
+    figOpts.legend(1,1) logical = 1;
 end
 
 %% get dataFile information using getFileNames.m
@@ -43,11 +50,12 @@ else
 end
 
 %% Run identify peaks to get waveform data
-[bigst, waveforms, t] = identifyPeaks(dataFiles);
+%[bigst, waveforms, t] = identifyPeaks(dataFiles);
+[bigst, t] = identifyPeaks(dataFiles);
 
 %% Generate figures if figs == true
 if figs == true
-    generateFigs(bigst, waveforms, t, linkax, plotPoints);
+    generateFigs(bigst, t, figOpts);
 end
 
 end
