@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %function [bigst] = analyzeABR(dataFiles, figs, linkax, plotPoints, compareFig)
-function [bigst] = analyzeABR(dataFiles, figs, figOpts)
+function [bigst] = analyzeABR(dataFiles, figs, comparePlot, figOpts)
 % dataFiles: char of a directory name or filename
 % figs: logical/boolean, if true figures will be generated
 % linkax: logical/boolean, if true, y axes will be linked on figure 1
@@ -28,12 +28,14 @@ arguments
     dataFiles;
 
     figs(1,1) logical = 1;
+    
+    comparePlot(1,1) logical = 0;
 
     figOpts.linkax(1,1) logical = 0;
 
     figOpts.plotPoints(1,1) logical = 1;
     
-    figOpts.compareFig(1,1) logical = 0;
+    figOpts.Tbegin(1,1) {mustBeNumeric} = 0;
     
     figOpts.Tend(1,1) {mustBeNumeric} = 6;
     
@@ -51,11 +53,13 @@ end
 
 %% Run identify peaks to get waveform data
 %[bigst, waveforms, t] = identifyPeaks(dataFiles);
-[bigst, t] = identifyPeaks(dataFiles);
+[bigst] = identifyPeaks(dataFiles);
 
 %% Generate figures if figs == true
 if figs == true
-    generateFigs(bigst, t, figOpts);
+    generateFigs(bigst, figOpts);
 end
 
+if comparePlot == true
+    compareFig(bigst, figOpts);
 end

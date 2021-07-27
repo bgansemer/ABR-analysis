@@ -14,8 +14,9 @@
 %use gradient/diff function to aid in peak identification?
 %something about hanning windows
 
-%Notes for development:
-%Should get rid of the separate waveforms struct and put it in the big struct. 
+%Development notes:
+%Add code to automatically save spreadsheets of wave I data
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -30,7 +30,8 @@ function st = getABRdata(dataFile)
     %generate name for the entry
     [~, fname] = fileparts(dataFile);
     fname = strrep(fname, '-', '_');
-    fname = strcat('r', fname);
+    %fname = convertCharsToStrings(fname);
+    fname = strcat('r_', fname);
     
     %read in data
     abrFile = fopen(dataFile, 'r');
@@ -114,7 +115,7 @@ function st = getABRdata(dataFile)
        tempTable = combinedTable{a}; %create temporary array to work with
 
        % split the data into info about the trace and the actual waveform data
-       if frq == 'click'
+       if convertCharsToStrings(frq) == "click"
            traceInfo = table2cell(tempTable(1:14, 'Var1'));
            traceData = tempTable(15:height(tempTable)-1, 'Var1');
        else
