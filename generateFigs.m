@@ -13,7 +13,6 @@
 %Add in argument for user to define colors for plots
 %Figure out how to check args so that function can be used standalone or be
 %called from analyzeABR.m
-%make compareFigs its own function
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

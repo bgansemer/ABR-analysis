@@ -4,16 +4,11 @@
 %Date Started: July 2021
 %Last Updated: July 2021
 
-%This is the analyze ABR master script used to call other functions to 
-%read in ABR data from txt files, process the data to get waveform info,
-%and generate figures, if desired. 
-%See each matlab file for details on individual functions. 
-
-%How to use:
-
-%Development Notes:
-%Make an interactive app that reads in the data and allows the user to
-%change options/parameters to update plots in real time. 
+%This is a helper function that is called after input options are selected
+%using the GUI menu generated in ABRanalyze. This is used to call the other
+%functions for reading and analyzing the data, as well as generating
+%figure. This function can also be called from the MATLAB command line when
+%providing the necessary arguments.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

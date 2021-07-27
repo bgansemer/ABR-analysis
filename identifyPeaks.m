@@ -9,14 +9,13 @@
 
 %Notes: use xcorr to aid in identifying peaks - cross correlate each
 %waveform with the waveform of the highest stimulus level.
-%Use smoothing spline function (csaps) to fit growth function. (also need
-%to talk to Steven and Ning about this.
-%use gradient/diff function to aid in peak identification?
 %something about hanning windows
 
 %Development notes:
 %Add code to automatically save spreadsheets of wave I data
-
+%Use smoothing spline function (csaps) to fit growth function. (also need
+%to talk to Steven and Ning about this.
+%use gradient/diff function to aid in peak identification?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
