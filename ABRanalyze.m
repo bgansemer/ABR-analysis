@@ -15,6 +15,7 @@
 %Make an interactive app that reads in the data and allows the user to
 %change options/parameters to update plots in real time. 
 %Add in more user options, such as color choice.
+%Add option to automatically save wave I tables (as excel files)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function getOptions
@@ -35,7 +36,8 @@ CH = round(SH/2)-175;
 
 %% Generate panel to select options
 %dataFiles = uigetdir();
-opts = uifigure(Name='Analysis Options', Position=[CW CH 300 350]);
+opts = uifigure(Name='Analysis Options', Position=[CW CH 300 350],...
+    HandleVisibility='on');
 chkPan = uipanel(opts, Title='Checkbox options', FontSize=12,...
     Position=[20 190 250 150]);
 
@@ -90,7 +92,10 @@ function startAnalysis(startBtn, figBox, compBox, linkBox, pointsBox, ...
     figOpts.Tbegin = beginField.Value;
     figOpts.Tend = endField.Value;
     
+    close all;
     %% Run analyze ABR
     helperFunc(dataFiles, genFigs, compPlot, figOpts);
+    
+    
 end
 
