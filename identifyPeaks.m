@@ -15,7 +15,9 @@
 %Add code to automatically save spreadsheets of wave I data
 %Use smoothing spline function (csaps) to fit growth function. (also need
 %to talk to Steven and Ning about this.
-%use gradient/diff function to aid in peak identification?
+%use gradient/diff function or other method to aid in peak identification.
+%One possiblilty: while N < peaks(Nidx, wf); N=peaks((Nidx+1), wf)
+%use findpeaks()
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -164,8 +166,15 @@ for f = 1:length(bigst)
     %shift time windows. 
     ALarray = [];
     for wf = 1:cls
-        tempidx1 = round(idx1 + 1.2*wf);
-        tempidx2 = round(idx2 + 1.2*wf);
+        tempidx1 = idx1;
+        tempidx2 = idx2;
+        if wf > 1
+            preWF = wf - 1;
+            preIDX = ALarray(preWF,2);
+            %preIDX = preIDX.Variables;
+            tempidx1 = preIDX - 2;
+            tempidx2 = tempidx1 + 22;
+        end
         %tempidx1 = idx1;
         %tempidx2 = idx2;
         %assess how far apart the tempidx are from the previous?
@@ -176,11 +185,13 @@ for f = 1:length(bigst)
         end
         
         %need to figure out how to catch index out of range error
-        N = max(peaks(tempidx1:tempidx2, wf));
-        Nidx = find(~(peaks(:, wf)-N));
-        if length(Nidx) > 1
-            Nidx = Nidx(1);
+        %N = max(peaks(tempidx1:tempidx2, wf));
+        N = findpeaks(peaks(tempidx1:tempidx2, wf));
+        if length(N) > 1 %make sure Nidx is > the previous Nidx
+            N = N(1);
+            %N = max(N);
         end
+        Nidx = find(~(peaks(:, wf)-N));
         N = N*1000000;
         %set time window for looking for P1 - first time is N1 latency,
         %next time is N1 latency + 0.5ms

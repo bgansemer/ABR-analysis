@@ -18,7 +18,7 @@
 %Add option to automatically save wave I tables (as excel files)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function getOptions
+function ABRanalyze
 %getOptions 
 %   This function creates a ui panel to allow users to select
 %   options/argumetns for running the ABR analysis package.

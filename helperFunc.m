@@ -12,7 +12,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [bigst] = analyzeABR(dataFiles, figs, comparePlot, figOpts)
+function [bigst] = helperFunc(dataFiles, figs, comparePlot, figOpts)
 % dataFiles: char of a directory name or filename
 % figs: logical/boolean, if true figures will be generated
 % linkax: logical/boolean, if true, y axes will be linked on figure 1
