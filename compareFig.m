@@ -61,9 +61,14 @@ end
 idxEnd = find(abs(t-figOpts.Tend)<0.02);
 
 %% get waveforms for each animal/conditon into separate arrays
-samp1 = allPeaks.(peakNames{1})(:,[1:6]);
-samp2 = allPeaks.(peakNames{2})(:,[1:6]);
-sampNames = peakNames(1:2);
+if length(peakNames) == 1
+    samp1 = allPeaks.(peakNames{1})(:,[1:6]);
+    sampNames = peakNames(1);
+else
+    samp1 = allPeaks.(peakNames{1})(:,[1:6]);
+    samp2 = allPeaks.(peakNames{2})(:,[1:6]);
+    sampNames = peakNames(1:2);
+end
 
 %modify each to add a certain value to each amplitude for an individual
 %Method from excel sheets is to subtract from waveforms from stimuli below
@@ -71,27 +76,47 @@ sampNames = peakNames(1:2);
 %Example: lowest stimulus is 40dB. Add 0 to 40dB waveform, add 3 to all
 %values in 50dB waveform, add 6 to all values in 60dB waveform, etc.
 %number of columns is set at 6 currently
-for col = 1:6
-    samp1(:,col) = samp1(:,col) + ((6-col)*3);
-    samp2(:,col) = samp2(:,col) + ((6-col)*3);
+if length(peakNames) == 1
+    for col = 1:6
+        samp1(:,col) = samp1(:,col) + ((6-col)*3);
+    end
+else
+    for col = 1:6
+        samp1(:,col) = samp1(:,col) + ((6-col)*3);
+        samp2(:,col) = samp2(:,col) + ((6-col)*3);
+    end
 end
 
 numFigs = length(findobj('type', 'figure'));
 
 figure(numFigs+1) 
 hold on
-h1 = plot(t(idxBegin:idxEnd), samp1(idxBegin:idxEnd, :), ...
+if length(peakNames) == 1
+    h1 = plot(t(idxBegin:idxEnd), samp1(idxBegin:idxEnd, :), ...
     'Color', 'k', 'LineWidth', 2);
-h2 = plot(t(idxBegin:idxEnd), samp2(idxBegin:idxEnd, :), ...
-    'Color', [1 0.4 0], 'LineWidth', 2);
-set(gca, 'YColor', 'white', 'yticklabel', [], 'YTick', [], ...
-    'XMinorTick', 'on', 'TickLength', [0.025,0.01], 'TickDir', 'both')
-xlabel("Latency (ms)", 'FontWeight', 'bold')
-xlim([figOpts.Tbegin figOpts.Tend]);
+    set(gca, 'YColor', 'white', 'yticklabel', [], 'YTick', [], ...
+        'XMinorTick', 'on', 'TickLength', [0.025,0.01], 'TickDir', 'both')
+    xlabel("Latency (ms)", 'FontWeight', 'bold')
+    xlim([figOpts.Tbegin figOpts.Tend]);
+else
+    h1 = plot(t(idxBegin:idxEnd), samp1(idxBegin:idxEnd, :), ...
+        'Color', 'k', 'LineWidth', 2);
+    h2 = plot(t(idxBegin:idxEnd), samp2(idxBegin:idxEnd, :), ...
+        'Color', [1 0.4 0], 'LineWidth', 2);
+    set(gca, 'YColor', 'white', 'yticklabel', [], 'YTick', [], ...
+        'XMinorTick', 'on', 'TickLength', [0.025,0.01], 'TickDir', 'both')
+    xlabel("Latency (ms)", 'FontWeight', 'bold')
+    xlim([figOpts.Tbegin figOpts.Tend]);
+end
 
 if figOpts.legend == true
-    legend([h1(1), h2(1)], strrep(strrep(sampNames, 'r_', ''), '_', '-'), ...
+    if length(peakNames) == 1
+        legend([h1(1)], strrep(strrep(sampNames, 'r_', ''), '_', '-'), ...
         'Location', 'eastoutside')
+    else
+        legend([h1(1), h2(1)], strrep(strrep(sampNames, 'r_', ''), '_', '-'), ...
+            'Location', 'eastoutside')
+    end
 end
 %     ylab1 = ylabel("dB SPL", 'Color', 'k', 'FontWeight', 'bold', ...
 %         'FontSize', 12, 'Rotation', 0);

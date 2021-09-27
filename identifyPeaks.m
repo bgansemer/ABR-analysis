@@ -16,8 +16,7 @@
 %Use smoothing spline function (csaps) to fit growth function. (also need
 %to talk to Steven and Ning about this.
 %use gradient/diff function or other method to aid in peak identification.
-%One possiblilty: while N < peaks(Nidx, wf); N=peaks((Nidx+1), wf)
-%use findpeaks()
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
