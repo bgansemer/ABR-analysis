@@ -7,3 +7,6 @@ A dialog box will allow for selecting options/parameters, and choosing the locat
 Input data are .txt files from BioSigRZ. Each .txt file should contain waveform data for one animal and one frequency,
 with data for all stimulus levels for that frequency. 
 
+Interactive app is in development.
+
+Need to add instructions for how to use/run the app/analysis.
