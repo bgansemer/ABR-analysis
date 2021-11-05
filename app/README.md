@@ -1,6 +1,7 @@
 ## Interactive App for ABR analysis
 
 Files for interactive app contained in this folder.
+App developed using MATLAB App Designer.
 
 What the app should do:
 1. Allow user to select input file(s)

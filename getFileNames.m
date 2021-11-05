@@ -9,7 +9,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function fullNames = getFileNames(directory)
+function [fullNames, names] = getFileNames(directory)
 
 if endsWith(directory, '.txt');
      files = dir([directory]);
