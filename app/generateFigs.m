@@ -127,13 +127,13 @@ for wv = 1:length(peakNames)
     legend(bigst(wv).Waveforms.Properties.VariableNames, 'Location', 'eastoutside');
     if figOpts.plotPoints == true
         hold on
-        plot(t(table2array(bigst(wv).waveIdata(:,2))), ...
-            (table2array(bigst(wv).waveIdata(:,1))), "ro")
+        plot(t(table2array(bigst(wv).waveIdata(:,2))), ... %N1 index
+            (table2array(bigst(wv).waveIdata(:,1))), "ro") %N1 amp
         hold on
 %         plot(t(table2array(waveIdata.(peakNames{wv})(:,4))), ...
 %             (table2array(waveIdata.(peakNames{wv})(:,3))), "bo")
-        plot(t(table2array(bigst(wv).waveIdata(:,4))), ...
-            (table2array(bigst(wv).waveIdata(:,3))), "bo")
+        plot(t(table2array(bigst(wv).waveIdata(:,4))), ... %P1 index
+            (table2array(bigst(wv).waveIdata(:,3))), "bo") %P1 amp
         hold off
     end
 
