@@ -141,7 +141,7 @@ function st = getABRdata(dataFile)
        c = contains(allWFs.Properties.VariableNames, lvl);
        %count = 1;
        if length(c) > 0
-            if c(end)
+            if any(c)
                 lvl = strcat(lvl, '2');
             end
        end

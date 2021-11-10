@@ -186,9 +186,12 @@ for f = 1:length(bigst)
         %need to figure out how to catch index out of range error
         %N = max(peaks(tempidx1:tempidx2, wf));
         N = findpeaks(peaks(tempidx1:tempidx2, wf));
+        %need to figure out how to deal with findpeaks not finding anything
         if length(N) > 1 %make sure Nidx is > the previous Nidx
             N = N(1);
             %N = max(N);
+        elseif length(N) == 0
+            N = peaks(tempidx1+2, wf);
         end
         Nidx = find(~(peaks(:, wf)-N));
         N = N*1000000;
