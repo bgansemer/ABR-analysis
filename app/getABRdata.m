@@ -2,7 +2,7 @@
 % Author: Benjamin Gansemer
 % Affiliation: Green Lab, University of Iowa
 % Date Started: July 2020
-% Last Updated: July 2021
+% Last Updated: November 2021
 
 % The function in this script is used to read 
 % auditory brainstem response (ABR) data into Matlab.

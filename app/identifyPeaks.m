@@ -2,7 +2,7 @@
 %Author: Benjamin Gansemer
 %Affiliation: Green Lab, University of Iowa
 %Date Started: August 2020
-%Last Updated: July 2021
+%Last Updated: November 2021
 
 %The function(s) in this script are used to identify peaks in ABR
 %waveforms. Main focus is on wave I amplitude. 
@@ -161,30 +161,35 @@ for f = 1:length(bigst)
     
     
     %get amplitudes and latencies 
-    %Need to figure out how to appropriately use cross correlations to
-    %shift time windows. 
+    %Add in baseline calculation
+    %Can then make sure peaks are > baseline, maybe at least 95%CI above
+    %add in option to find other peaks
     ALarray = [];
     for wf = 1:cls
         tempidx1 = idx1;
         tempidx2 = idx2;
-        if wf > 1
-            preWF = wf - 1;
-            preIDX = ALarray(preWF,2);
+        if wf > 1 %if not the first wf being measured
+            preWF = wf - 1; %get index of previous wf
+            preIDX = ALarray(preWF,2); %get Nidx of previous wf
             %preIDX = preIDX.Variables;
-            tempidx1 = preIDX - 2;
-            tempidx2 = tempidx1 + 22;
+            tempidx1 = preIDX - 2; %set tempidx1 to 2 idx before previous Nidx
+            tempidx2 = tempidx1 + 22; %set tempidx2 to 22 idx after tempidx1
         end
         %tempidx1 = idx1;
         %tempidx2 = idx2;
         %assess how far apart the tempidx are from the previous?
         
+        %if new tempidx are less than 0 set to original idx
         if tempidx1 < 0 || tempidx2 < 0 
             tempidx1 = idx1;
             tempidx2 = idx2;
         end
         
         %need to figure out how to catch index out of range error
-        %N = max(peaks(tempidx1:tempidx2, wf));
+        
+        %find N1 peak
+        %add in checks to make sure peak is prominent enough and is above
+        %baseline
         N = findpeaks(peaks(tempidx1:tempidx2, wf));
         %need to figure out how to deal with findpeaks not finding anything
         if length(N) > 1 %make sure Nidx is > the previous Nidx
