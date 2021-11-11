@@ -147,7 +147,7 @@ for f = 1:length(bigst)
     %get wave 1 amplitudes and latencies
     %specify timewindow for N1
     t1 = 1.1;
-    t2 = 2.0;
+    t2 = 2.3;
 %     %specify timewindow for P1
 %     t3 = 1.5;
 %     t4 = 2.8;
@@ -159,11 +159,10 @@ for f = 1:length(bigst)
 %     idx3 = find(abs(t-t3)<tol);
 %     idx4 = find(abs(t-t4)<tol);
     
+    %get idx for 0.75 ms for baseline calculation
+    bidx = find(abs(t-0.75)<tol);
     
     %get amplitudes and latencies 
-    %Add in baseline calculation
-    %Can then make sure peaks are > baseline, maybe at least 95%CI above
-    %add in option to find other peaks
     ALarray = [];
     for wf = 1:cls
         tempidx1 = idx1;
@@ -185,40 +184,60 @@ for f = 1:length(bigst)
             tempidx2 = idx2;
         end
         
-        %need to figure out how to catch index out of range error
+        %Calculate baseline - avg. signal intensity from 0-0.75 ms
+        %Can then make sure peaks are > baseline, maybe at least 95%CI above
+        %add in option to find other peaks
+        baseVector = peaks(1:bidx, wf);
+        [baseline, ~, baseCI, ~] = normfit(baseVector);
+        baseCor = baseline*1000000;
         
         %find N1 peak
-        %add in checks to make sure peak is prominent enough and is above
-        %baseline
-        N = findpeaks(peaks(tempidx1:tempidx2, wf));
+        %check to make sure peak is prominent enough
+        %may need to determine better min prominence value
+        N = findpeaks(peaks(tempidx1:tempidx2, wf),...
+            'MinPeakProminence', 0.1e-065, 'MinPeakWidth', 3.5);
+        %[N,~,wid,prom] = findpeaks(peaks(tempidx1:tempidx2, wf));
+        %prom
+        %wid;
         %need to figure out how to deal with findpeaks not finding anything
-        if length(N) > 1 %make sure Nidx is > the previous Nidx
+        if length(N) >= 1 %make sure Nidx is > the previous Nidx
             N = N(1);
             %N = max(N);
-        elseif length(N) == 0
-            N = peaks(tempidx1+2, wf);
-        end
-        Nidx = find(~(peaks(:, wf)-N));
-        N = N*1000000;
-        %set time window for looking for P1 - first time is N1 latency,
-        %next time is N1 latency + 0.5ms
-        idx3 = Nidx;
-        t4 = t(Nidx) + 0.75;
-        idx4 = find(abs(t-t4)<tol);
+            Nidx = find(~(peaks(:, wf)-N));
+            N = N*1000000;
+            %set time window for looking for P1 - first time is N1 latency,
+            %next time is N1 latency + 0.5ms
+            idx3 = Nidx;
+            t4 = t(Nidx) + 0.75;
+            idx4 = find(abs(t-t4)<tol);
         
-        P = min(peaks(idx3:idx4, wf));
-        Pidx = find(~(peaks(:, wf)-P));
-        if length(Pidx) > 1
-            Pidx = Pidx(1);
+            P = min(peaks(idx3:idx4, wf));
+            Pidx = find(~(peaks(:, wf)-P));
+            if length(Pidx) > 1
+                Pidx = Pidx(1);
+            end      
+            P = P*1000000;
+            W = N-P;  
+            L = t(Nidx);
+        elseif length(N) == 0
+            %N = peaks(tempidx1+2, wf); %need to change to NaN
+            %N = missing;
+            N = 0;
+            %this will requiring dealing with all downstream calls of N
+            Nidx = ALarray((wf-1), 2);
+            Pidx = 1;
+            P = 0;
+            W = 0;
+            L = 0;
+
         end
-        P = P*1000000;
-        W = N-P;
         ALarray(wf,1) = N;
         ALarray(wf,2) = Nidx;
         ALarray(wf,3) = P;
         ALarray(wf,4) = Pidx;
         ALarray(wf,5) = W;
-        ALarray(wf,6) = t(Nidx);
+        ALarray(wf,6) = L;
+        ALarray(wf,7) = baseCor;
     end 
 
     arrayTable = array2table(ALarray);
@@ -226,7 +245,8 @@ for f = 1:length(bigst)
     %arrayTable = arrayTable(:,:);
     arrayTable.Properties.VariableNames = [ {'N1 amplitude (µV)'}...
         {'N1 index'} {'P1 amplitude (µV)'} {'P1 index'}...
-        {'Wave I amplitude (µV)'} {'Wave I latency (ms)'} {'Stimulus level'} ];
+        {'Wave I amplitude (µV)'} {'Wave I latency (ms)'}...
+        {'Baseline'} {'Stimulus level'}];
     % writetable(arrayTable, filename.csv);
     
     %waveIdata(1).(fields{f}) = arrayTable;
