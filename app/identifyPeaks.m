@@ -13,9 +13,9 @@
 
 %Development notes:
 %Add code to automatically save spreadsheets of wave I data
-%Use smoothing spline function (csaps) to fit growth function. (also need
-%to talk to Steven and Ning about this.
+%Use smoothing spline function (csaps) to fit growth function.
 %use gradient/diff function or other method to aid in peak identification.
+%Implement ability to identify later peaks (waves II-V)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,6 +170,10 @@ for f = 1:length(bigst)
         if wf > 1 %if not the first wf being measured
             preWF = wf - 1; %get index of previous wf
             preIDX = ALarray(preWF,2); %get Nidx of previous wf
+            %correct for previous WF not having peak identified
+            if preIDX == 1
+                preIDX = tempidx1;
+            end
             %preIDX = preIDX.Variables;
             tempidx1 = preIDX - 2; %set tempidx1 to 2 idx before previous Nidx
             tempidx2 = tempidx1 + 22; %set tempidx2 to 22 idx after tempidx1
@@ -224,7 +228,7 @@ for f = 1:length(bigst)
             %N = missing;
             N = 0;
             %this will requiring dealing with all downstream calls of N
-            Nidx = ALarray((wf-1), 2);
+            Nidx = 1; %ALarray((wf-1), 2);
             Pidx = 1;
             P = 0;
             W = 0;
