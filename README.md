@@ -31,3 +31,7 @@ In development...
 Plots of each waveform on its own separate axis to allow better visualization of waveforms across stimulus levels.
 
 ### Options
+
+Begin timepoint
+End timepoint
+Plot points
