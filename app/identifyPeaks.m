@@ -214,15 +214,29 @@ for f = 1:length(bigst)
             idx3 = Nidx;
             t4 = t(Nidx) + 0.75;
             idx4 = find(abs(t-t4)<tol);
+            %get index to find base of wave 1 peak
+            t5 = t(Nidx) - 0.75;
+            idx5 = find(abs(t-t5)<tol);
         
             P = min(peaks(idx3:idx4, wf));
+            %try using findpeaks to get P1 - not working
+            %P = abs(findpeaks(-peaks(idx3:idx4, wf)));
             Pidx = find(~(peaks(:, wf)-P));
             if length(Pidx) > 1
                 Pidx = Pidx(1);
-            end      
+            end
+
+            preN = min(peaks(idx5:Nidx, wf));
+            preNidx = find(~(peaks(:, wf)-preN));
+            if length(preNidx) > 1
+                preNidx = preNidx(1);
+            end
+
             P = P*1000000;
             W = N-P;  
             L = t(Nidx);
+            preN = preN*1000000;
+
         elseif length(N) == 0
             %N = peaks(tempidx1+2, wf); %need to change to NaN
             %N = missing;
@@ -230,9 +244,11 @@ for f = 1:length(bigst)
             %this will requiring dealing with all downstream calls of N
             Nidx = 1; %ALarray((wf-1), 2);
             Pidx = 1;
+            preNidx = 1;
             P = 0;
             W = 0;
             L = 0;
+            preN = 0;
 
         end
         ALarray(wf,1) = N;
@@ -242,6 +258,8 @@ for f = 1:length(bigst)
         ALarray(wf,5) = W;
         ALarray(wf,6) = L;
         ALarray(wf,7) = baseCor;
+        ALarray(wf,8) = preN;
+        ALarray(wf,9) = preNidx;
     end 
 
     arrayTable = array2table(ALarray);
@@ -250,7 +268,7 @@ for f = 1:length(bigst)
     arrayTable.Properties.VariableNames = [ {'N1 amplitude (µV)'}...
         {'N1 index'} {'P1 amplitude (µV)'} {'P1 index'}...
         {'Wave I amplitude (µV)'} {'Wave I latency (ms)'}...
-        {'Baseline'} {'Stimulus level'}];
+        {'Baseline'} {'preN1'} {'preN1 index'} {'Stimulus level'}];
     % writetable(arrayTable, filename.csv);
     
     %waveIdata(1).(fields{f}) = arrayTable;
