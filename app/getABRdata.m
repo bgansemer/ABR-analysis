@@ -136,15 +136,21 @@ function st = getABRdata(dataFile)
        % set name of trace based on record number and dB level
        %tName = strcat(rcd, '_', lvl);
 
-       %need to change - only allows one duplicate and match has to be previous
-       %trace
-       c = contains(allWFs.Properties.VariableNames, lvl);
-       %count = 1;
-       if length(c) > 0
-            if any(c)
-                lvl = strcat(lvl, '2');
-            end
+       %change stim lvl varname if it is already present in the list
+       %allows for duplicate stim lvls
+       %c = ismember(allWFs.Properties.VariableNames, lvl)
+       count = 1;
+       while any(ismember(allWFs.Properties.VariableNames, lvl))
+           count = count+1;
+           spl = strsplit(lvl, 'B');
+           lvl = strrep(lvl, spl{2}, '');
+           lvl = strcat(lvl, num2str(count));
        end
+%        if length(c) > 0
+%             if any(c)
+%                 lvl = strcat(lvl, '2')
+%             end
+%        end
 
        %traceData.Properties.VariableNames{'Var1'} = lvl;
 

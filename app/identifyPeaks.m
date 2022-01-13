@@ -161,6 +161,10 @@ for f = 1:length(bigst)
     
     %get idx for 0.75 ms for baseline calculation
     bidx = find(abs(t-0.75)<tol);
+    %get idx for baseline calculation later in waveform
+    %calculate baseline as avg of amp from 8-12ms
+    postBidx1 = find(abs(t-8.0)<tol);
+    postBidx2 = find(abs(t-t(end))<tol);
     
     %get amplitudes and latencies 
     ALarray = [];
@@ -191,9 +195,15 @@ for f = 1:length(bigst)
         %Calculate baseline - avg. signal intensity from 0-0.75 ms
         %Can then make sure peaks are > baseline, maybe at least 95%CI above
         %add in option to find other peaks
-        baseVector = peaks(1:bidx, wf);
-        [baseline, ~, baseCI, ~] = normfit(baseVector);
-        baseCor = baseline*1000000;
+        baseVector1 = peaks(1:bidx, wf);
+        [baseline1, ~, baseCI1, ~] = normfit(baseVector1);
+        baseCor1 = baseline1*1000000;
+
+        baseVector2 = peaks(postBidx1:postBidx2, wf);
+        [baseline2, ~, baseCI2, ~] = normfit(baseVector2);
+        baseCor2 = baseline2*1000000;
+
+        baseCor = mean([baseCor1 baseCor2]);
         
         %find N1 peak
         %check to make sure peak is prominent enough
@@ -251,6 +261,16 @@ for f = 1:length(bigst)
             preN = 0;
 
         end
+
+        %calculate AUC for wave I
+        if preNidx==1 && Pidx==1
+            AUC = 0;
+        else
+            waveIarea = peaks(preNidx:Pidx, wf);
+            AUC = cumtrapz(t(preNidx:Pidx), waveIarea);
+            AUC = sum(abs(AUC))*1000000;
+        end
+
         ALarray(wf,1) = N;
         ALarray(wf,2) = Nidx;
         ALarray(wf,3) = P;
@@ -260,6 +280,7 @@ for f = 1:length(bigst)
         ALarray(wf,7) = baseCor;
         ALarray(wf,8) = preN;
         ALarray(wf,9) = preNidx;
+        ALarray(wf,10) = AUC;
     end 
 
     arrayTable = array2table(ALarray);
@@ -268,7 +289,7 @@ for f = 1:length(bigst)
     arrayTable.Properties.VariableNames = [ {'N1 amplitude (µV)'}...
         {'N1 index'} {'P1 amplitude (µV)'} {'P1 index'}...
         {'Wave I amplitude (µV)'} {'Wave I latency (ms)'}...
-        {'Baseline'} {'preN1'} {'preN1 index'} {'Stimulus level'}];
+        {'Baseline'} {'preN1'} {'preN1 index'} {'AUC wave I'} {'Stimulus level'}];
     % writetable(arrayTable, filename.csv);
     
     %waveIdata(1).(fields{f}) = arrayTable;
