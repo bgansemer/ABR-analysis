@@ -167,7 +167,7 @@ for f = 1:length(bigst)
     postBidx2 = find(abs(t-t(end))<tol);
     
     %get amplitudes and latencies 
-    ALarray = [];
+    ALarray = zeros(cls, 10);
     for wf = 1:cls
         tempidx1 = idx1;
         tempidx2 = idx2;
@@ -267,8 +267,8 @@ for f = 1:length(bigst)
             AUC = 0;
         else
             waveIarea = peaks(preNidx:Pidx, wf);
-            AUC = cumtrapz(t(preNidx:Pidx), waveIarea);
-            AUC = sum(abs(AUC))*1000000;
+            AUC = cumtrapz(t(preNidx:Pidx), abs(waveIarea));
+            AUC = sum(AUC)*1000000;
         end
 
         ALarray(wf,1) = N;
