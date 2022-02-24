@@ -92,6 +92,7 @@ t = t*0.04096;
 for f = 1:length(bigst)
     
     %% get individual waveform data
+    %f
     data = bigst(f);
 
     %peaks = table2array(waveforms.(bigst(f).Name));
@@ -147,7 +148,7 @@ for f = 1:length(bigst)
     %get wave 1 amplitudes and latencies
     %specify timewindow for N1
     t1 = 1.1;
-    t2 = 2.3;
+    t2 = 2.1;
 %     %specify timewindow for P1
 %     t3 = 1.5;
 %     t4 = 2.8;
@@ -169,6 +170,7 @@ for f = 1:length(bigst)
     %get amplitudes and latencies 
     ALarray = zeros(cls, 10);
     for wf = 1:cls
+        %wf
         tempidx1 = idx1;
         tempidx2 = idx2;
         if wf > 1 %if not the first wf being measured
@@ -208,14 +210,25 @@ for f = 1:length(bigst)
         %find N1 peak
         %check to make sure peak is prominent enough
         %may need to determine better min prominence value
-        N = findpeaks(peaks(tempidx1:tempidx2, wf),...
-            'MinPeakProminence', 0.1e-065, 'MinPeakWidth', 3.5);
+        [N, locs, wid] = findpeaks(peaks(:, wf),...
+            'MinPeakProminence', 1.0e-065, 'MinPeakWidth', 3);
+        %save wave I width
         %[N,~,wid,prom] = findpeaks(peaks(tempidx1:tempidx2, wf));
         %prom
         %wid;
         %need to figure out how to deal with findpeaks not finding anything
         if length(N) >= 1 %make sure Nidx is > the previous Nidx
-            N = N(1);
+            %find the peak locs that are between tempidx1 and tempidx2
+            %this should be the approximate location of wave I
+            %rules out peaks identified that are before or after wave I
+            goodLocs = locs(locs>tempidx1 & locs<tempidx2);
+            if length(goodLocs) == 0
+                locInd = 1;
+            else
+                locInd = find(locs == goodLocs(1));
+            end
+            N = N(locInd);
+            wid = wid(locInd);
             %N = max(N);
             Nidx = find(~(peaks(:, wf)-N));
             N = N*1000000;
@@ -225,8 +238,12 @@ for f = 1:length(bigst)
             t4 = t(Nidx) + 0.75;
             idx4 = find(abs(t-t4)<tol);
             %get index to find base of wave 1 peak
-            t5 = t(Nidx) - 0.75;
-            idx5 = find(abs(t-t5)<tol);
+            t5 = t(Nidx) - 0.8;
+            if t5 < 0
+                idx5 = 1;
+            else
+                idx5 = find(abs(t-t5)<tol);
+            end
         
             P = min(peaks(idx3:idx4, wf));
             %try using findpeaks to get P1 - not working
@@ -251,6 +268,7 @@ for f = 1:length(bigst)
             %N = peaks(tempidx1+2, wf); %need to change to NaN
             %N = missing;
             N = 0;
+            %wid = 0;
             %this will requiring dealing with all downstream calls of N
             Nidx = 1; %ALarray((wf-1), 2);
             Pidx = 1;
@@ -281,6 +299,7 @@ for f = 1:length(bigst)
         ALarray(wf,8) = preN;
         ALarray(wf,9) = preNidx;
         ALarray(wf,10) = AUC;
+        ALarray(wf,11) = wid;
     end 
 
     arrayTable = array2table(ALarray);
@@ -289,7 +308,8 @@ for f = 1:length(bigst)
     arrayTable.Properties.VariableNames = [ {'N1 amplitude (µV)'}...
         {'N1 index'} {'P1 amplitude (µV)'} {'P1 index'}...
         {'Wave I amplitude (µV)'} {'Wave I latency (ms)'}...
-        {'Baseline'} {'preN1'} {'preN1 index'} {'AUC wave I'} {'Stimulus level'}];
+        {'Baseline'} {'preN1'} {'preN1 index'} {'AUC wave I'}...
+        {'Wave I width'} {'Stimulus level'}];
     % writetable(arrayTable, filename.csv);
     
     %waveIdata(1).(fields{f}) = arrayTable;
