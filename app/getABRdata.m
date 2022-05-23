@@ -100,6 +100,8 @@ function st = getABRdata(dataFile)
     end
 
     freqCell = table2cell(combinedTable{1});
+
+    %grep from https://www.mathworks.com/matlabcentral/fileexchange/9647-grep-a-pedestrian-very-fast-grep-utility
     frequency = grep(freqCell, 'Freq');
     if length(frequency) == 0;
         frq = 'click';

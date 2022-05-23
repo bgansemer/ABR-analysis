@@ -10,6 +10,10 @@ Signal Processing Toolbox
 
 All other scripts and files required for running the app should be present in this repository. The app should run properly if run directly from the `app` directory. The cloned repo may need to be added to the MATLAB path if file not found errors occur when trying to run.
 
+There are two files retrieved from MATLAB file exchange that are required to run the app (both are present in this repo.  
+legendUnq.m was retrieved from [legendUnq](https://www.mathworks.com/matlabcentral/fileexchange/67646-legendunq).  
+grep.m was retrieved from [grep](https://www.mathworks.com/matlabcentral/fileexchange/9647-grep-a-pedestrian-very-fast-grep-utility).  
+
 ## Instructions for running
 
 In development...
