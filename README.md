@@ -1,10 +1,4 @@
-# Auditory brainstem response analysis in MATLAB
-
-Author: Benjamin Gansemer
-
-version: 1
-
-## Overview
+# ABRapp v1
 
 This is a MATLAB app developed in AppDesigner for post-analysis of ABR waveform data to identify wave I peaks/amplitude and latency. It is currently designed to take as input data .txt files from BioSigRZ. It can handle files with or without group information. 
 
