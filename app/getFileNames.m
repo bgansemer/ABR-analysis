@@ -15,11 +15,11 @@ if endsWith(directory, '.txt');
      files = dir([directory]);
      names = {files.name};
      folders = {files.folder};
-     fullNames = strcat(folders, {'\'}, names);
+     fullNames = strcat(folders, {'/'}, names);
 else
-    files = dir([directory, '\*.txt']);
+    files = dir([directory, '/*.txt']);
     names = {files.name};
     folders = {files.folder};
-    fullNames = strcat(folders, {'\'}, names);
+    fullNames = strcat(folders, {'/'}, names);
 end
 end

@@ -62,7 +62,7 @@ function st = getABRdata(dataFile)
         if length(find(contains(data{1}, 'Freq'))) == 0;
             fin = start + 306;
         else
-            fin = start + 308;
+            fin = start + 307;
         end
 
 
